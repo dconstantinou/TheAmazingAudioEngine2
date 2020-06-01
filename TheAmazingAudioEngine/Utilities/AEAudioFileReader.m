@@ -31,7 +31,7 @@ static const UInt32 kDefaultReadSize = 4096;
 static const UInt32 kMaxAudioFileReadSize = 16384;
 
 @interface AEAudioFileReader ()
-@property (nonatomic, strong) NSString * path;
+@property (nonatomic, strong) NSURL * url;
 @property (nonatomic) AudioStreamBasicDescription targetAudioDescription;
 @property (nonatomic, copy) AEAudioFileReaderLoadBlock loadBlock;
 @property (nonatomic, copy) AEAudioFileReaderIncrementalReadBlock readBlock;
@@ -42,7 +42,7 @@ static const UInt32 kMaxAudioFileReadSize = 16384;
 
 @implementation AEAudioFileReader
 
-+ (BOOL)infoForFileAtPath:(NSString *)path audioDescription:(AudioStreamBasicDescription*)audioDescription
++ (BOOL)infoForFileAtUrl:(NSURL *)url audioDescription:(AudioStreamBasicDescription*)audioDescription
                   length:(UInt32*)lengthInFrames error:(NSError**)error {
     
     if ( audioDescription ) memset(audioDescription, 0, sizeof(AudioStreamBasicDescription));
@@ -51,7 +51,7 @@ static const UInt32 kMaxAudioFileReadSize = 16384;
     OSStatus status;
     
     // Open file
-    status = ExtAudioFileOpenURL((__bridge CFURLRef)[NSURL fileURLWithPath:path], &audioFile);
+    status = ExtAudioFileOpenURL((__bridge CFURLRef)url, &audioFile);
     if ( !AECheckOSStatus(status, "ExtAudioFileOpenURL") ) {
         if ( error ) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status 
                                               userInfo:@{NSLocalizedDescriptionKey: NSLocalizedString(@"Couldn't open the audio file", @"")}];
@@ -88,11 +88,11 @@ static const UInt32 kMaxAudioFileReadSize = 16384;
     return YES;
 }
 
-+ (instancetype)loadFileAtPath:(NSString *)path
++ (instancetype)loadFileAtUrl:(NSURL *)url
         targetAudioDescription:(AudioStreamBasicDescription)targetAudioDescription
                completionBlock:(AEAudioFileReaderLoadBlock _Nonnull)block {
     AEAudioFileReader * reader = [AEAudioFileReader new];
-    reader.path = path;
+    reader.url = url;
     reader.targetAudioDescription = targetAudioDescription;
     reader.loadBlock = block;
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0), ^{
@@ -101,22 +101,22 @@ static const UInt32 kMaxAudioFileReadSize = 16384;
     return reader;
 }
 
-+ (instancetype)readFileAtPath:(NSString *)path
++ (instancetype)readFileAtUrl:(NSURL *)url
         targetAudioDescription:(AudioStreamBasicDescription)targetAudioDescription
                      readBlock:(AEAudioFileReaderIncrementalReadBlock)readBlock
                completionBlock:(AEAudioFileReaderCompletionBlock)completionBlock {
 
-    return [self readFileAtPath:path targetAudioDescription:targetAudioDescription readBlock:readBlock
+    return [self readFileAtUrl:url targetAudioDescription:targetAudioDescription readBlock:readBlock
                completionBlock:completionBlock blockSize:kDefaultReadSize];
 }
 
-+ (instancetype)readFileAtPath:(NSString *)path
++ (instancetype)readFileAtUrl:(NSURL *)url
         targetAudioDescription:(AudioStreamBasicDescription)targetAudioDescription
                      readBlock:(AEAudioFileReaderIncrementalReadBlock)readBlock
                completionBlock:(AEAudioFileReaderCompletionBlock)completionBlock
                      blockSize:(UInt32)blockSize {
     AEAudioFileReader * reader = [AEAudioFileReader new];
-    reader.path = path;
+    reader.url = url;
     reader.targetAudioDescription = targetAudioDescription;
     reader.readBlock = readBlock;
     reader.readCompletionBlock = completionBlock;
@@ -136,7 +136,7 @@ static const UInt32 kMaxAudioFileReadSize = 16384;
     OSStatus status;
     
     // Open file
-    status = ExtAudioFileOpenURL((__bridge CFURLRef)[NSURL fileURLWithPath:self.path], &audioFile);
+    status = ExtAudioFileOpenURL((__bridge CFURLRef)self.url, &audioFile);
     if ( !AECheckOSStatus(status, "ExtAudioFileOpenURL") ) {
         [self reportError:[NSError errorWithDomain:NSOSStatusErrorDomain code:status
                            userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"Couldn't open the audio file", @"")}]];
