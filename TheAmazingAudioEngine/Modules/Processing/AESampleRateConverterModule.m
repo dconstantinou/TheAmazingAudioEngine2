@@ -13,6 +13,9 @@
     // Restore subrenderer sample rate.
     subrenderer.sampleRate = subrendererSampleRate;
     [self rendererDidChangeSampleRate];
+      
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(rendererDidChangeSampleRate)
+                                                 name:AERendererDidChangeSampleRateNotification object:subrenderer];
   }
   return self;
 }
