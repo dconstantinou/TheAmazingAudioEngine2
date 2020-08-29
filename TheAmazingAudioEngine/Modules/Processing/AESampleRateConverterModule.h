@@ -1,4 +1,4 @@
-#import <TheAmazingAudioEngine/TheAmazingAudioEngine.h>
+#import "AEAudioUnitModule.h"
 
 /**
  * A processing module that converts the sample rate and number of channels. In this module the

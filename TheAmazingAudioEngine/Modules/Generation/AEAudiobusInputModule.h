@@ -6,7 +6,7 @@
 //  Copyright © 2016 A Tasty Pixel. All rights reserved.
 //
 
-#import <TheAmazingAudioEngine/TheAmazingAudioEngine.h>
+#import "TheAmazingAudioEngine.h"
 
 @class AEAudioUnitInputModule;
 @class ABAudioReceiverPort;
