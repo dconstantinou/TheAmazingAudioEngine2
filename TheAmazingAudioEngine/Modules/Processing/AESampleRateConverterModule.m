@@ -21,6 +21,15 @@
   return self;
 }
 
+- (BOOL)setup {
+    if ([super setup]) {
+        [self rendererDidChangeSampleRate];
+        return YES;
+    }
+    
+    return NO;
+}
+
 - (void)rendererDidChangeSampleRate {
   // Update the sample rate
   AECheckOSStatus(AudioUnitUninitialize(self.audioUnit), "AudioUnitUninitialize");
