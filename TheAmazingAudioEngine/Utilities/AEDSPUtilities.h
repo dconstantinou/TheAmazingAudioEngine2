@@ -213,6 +213,16 @@ static inline double AEDSPRatioToDecibels(double ratio) {
 }
 
 /*!
+ * Convert decibels to power ratio
+ *
+ * @param decibels Value in decibels
+ * @return Power ratio value
+ */
+static inline double AEDSPDecibelsToRatioClipped(double decibels, double minDb) {
+    return decibels <= minDb ? 0 : pow(10.0, decibels / 20.0);
+}
+
+/*!
  * Structure for FFT convolution
  */
 typedef struct AEDSPFFTConvolution_t AEDSPFFTConvolution;
@@ -313,6 +323,22 @@ void AEDSPFFTConvolutionExecuteContinuous(AEDSPFFTConvolution * setup, float * i
  * @param setup Setup structure
  */
 void AEDSPFFTConvolutionReset(AEDSPFFTConvolution * setup);
+
+/*!
+ * Identify the peaks in a distribution
+ *
+ * @param distribution Array of floats to analyse
+ * @param startIndex The start element of the sub-range to search (use higher value than endIndex to perform a reverse search)
+ * @param endIndex The end element of the sub-range to search
+ * @param leadingDelta The minimum height of the leading edge of peaks (relative to the preceding valley)
+ * @param trailingDelta The minimum height of the trailing edge of peaks (next valley depth, relative to the peak height)
+ * @param minimumSeparation The minimum space between successive peaks (a peak within this distance of the preceding one will be ignored)
+ * @param sort Whether to sort results. Passing YES will cause this method to dynamically allocate a buffer to store all impulses, returning the highest peaks; this is not realtime safe.
+ * @param peaks A buffer to store the discovered peaks, as a list of indices into the distribution
+ * @param maxPeaks Size of peaks buffer
+ * @return The number of peaks identified
+ */
+int AEDSPFindPeaksInDistribution(float * distribution, int startIndex, int endIndex, float leadingDelta, float trailingDelta, int minimumSeparation, BOOL sort, int * peaks, int maxPeaks);
 
 #ifdef __cplusplus
 }

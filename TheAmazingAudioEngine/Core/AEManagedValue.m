@@ -47,10 +47,6 @@ static linkedlistitem_t * __pendingInstances = NULL;
 static linkedlistitem_t * __servicedInstances = NULL;
 static pthread_mutex_t __pendingInstancesMutex = PTHREAD_MUTEX_INITIALIZER;
 
-#ifdef DEBUG
-pthread_t AEManagedValueRealtimeThreadIdentifier = NULL;
-#endif
-
 @interface AEManagedValue () {
     void *      _value;
     BOOL        _valueSet;
@@ -298,7 +294,7 @@ pthread_t AEManagedValueRealtimeThreadIdentifier = NULL;
 
 void AEManagedValueCommitPendingUpdates() {
     #ifdef DEBUG
-    if ( AEManagedValueRealtimeThreadIdentifier && AEManagedValueRealtimeThreadIdentifier != pthread_self() ) {
+    if ( AERealtimeThreadIdentifier && AERealtimeThreadIdentifier != pthread_self() ) {
         if ( AERateLimit() ) printf("%s called from outside realtime thread\n", __FUNCTION__);
     }
     #endif
@@ -337,7 +333,7 @@ void * AEManagedValueGetValue(__unsafe_unretained AEManagedValue * THIS) {
         return THIS->_atomicBatchUpdateLastValue;
     }
     
-    if ( !pthread_main_np() ) {
+    if ( !THIS->_usedOnAudioThread && !pthread_main_np() ) {
         AEManagedValueServiceReleaseQueue(THIS);
     }
     
